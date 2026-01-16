@@ -98,6 +98,105 @@ func (h *WSHub) BroadcastConnectionUpdate(connections []WSConnection) {
 	}
 }
 
+// LogHub manages log streaming WebSocket connections
+type LogHub struct {
+	clients   map[*websocket.Conn]bool
+	broadcast chan LogMessage
+	register  chan *websocket.Conn
+	unregister chan *websocket.Conn
+	mu        sync.RWMutex
+}
+
+func NewLogHub() *LogHub {
+	return &LogHub{
+		clients:    make(map[*websocket.Conn]bool),
+		broadcast:  make(chan LogMessage, 256),
+		register:   make(chan *websocket.Conn),
+		unregister: make(chan *websocket.Conn),
+	}
+}
+
+// Run starts the log hub
+func (h *LogHub) Run() {
+	for {
+		select {
+		case client := <-h.register:
+			h.mu.Lock()
+			h.clients[client] = true
+			h.mu.Unlock()
+			log.Printf("Log client connected. Total log clients: %d", len(h.clients))
+
+		case client := <-h.unregister:
+			h.mu.Lock()
+			if _, ok := h.clients[client]; ok {
+				delete(h.clients, client)
+				client.Close()
+			}
+			h.mu.Unlock()
+			log.Printf("Log client disconnected. Total log clients: %d", len(h.clients))
+
+		case message := <-h.broadcast:
+			h.mu.RLock()
+			for client := range h.clients {
+				err := client.WriteJSON(message)
+				if err != nil {
+					log.Printf("Error sending log to client: %v", err)
+					client.Close()
+					delete(h.clients, client)
+				}
+			}
+			h.mu.RUnlock()
+		}
+	}
+}
+
+// BroadcastLog sends a log message to all connected clients
+func (h *LogHub) BroadcastLog(level, message string) {
+	h.broadcast <- LogMessage{
+		Level:   level,
+		Message: message,
+	}
+}
+
+// HandleLogStream handles WebSocket connections for log streaming
+func HandleLogStream(logHub *LogHub) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Printf("Log WebSocket upgrade failed: %v", err)
+			return
+		}
+
+		// Register new client
+		logHub.register <- conn
+
+		// Send welcome message
+		welcomeMsg := LogMessage{
+			Level:   "info",
+			Message: "Connected to NetOps backend terminal stream",
+		}
+		if err := conn.WriteJSON(welcomeMsg); err != nil {
+			log.Printf("Error sending welcome message: %v", err)
+			logHub.unregister <- conn
+			return
+		}
+
+		// Keep connection alive and handle close
+		go func() {
+			defer func() {
+				logHub.unregister <- conn
+			}()
+
+			for {
+				_, _, err := conn.ReadMessage()
+				if err != nil {
+					break
+				}
+			}
+		}()
+	}
+}
+
 // HandleWebSocket handles WebSocket connections
 func HandleWebSocket(hub *WSHub, store *NodeStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,37 @@
+# Node
+node_modules
+npm-debug.log
+.npm
+
+# Build outputs
+dist
+build
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Docs
+*.md
+!README.md
+
+# Backend binary
+backend/netops-backend
+
+# Logs
+*.log

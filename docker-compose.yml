@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Backend service - monitors host network connections
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: netops-backend
+    # CRITICAL: Use host network mode to monitor host's actual network traffic
+    # Without this, the container only sees its own network namespace
+    network_mode: host
+    # Required capabilities for network monitoring
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    # Alternative: use privileged mode (less secure but simpler)
+    # privileged: true
+    volumes:
+      # Mount GeoIP database if you have it locally
+      - ./backend/GeoLite2-City.mmdb:/app/GeoLite2-City.mmdb:ro
+    restart: unless-stopped
+    environment:
+      - PORT=8081
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Frontend service - serves the React app
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: netops-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    environment:
+      # Since backend uses host network, it's accessible at localhost:8081
+      - VITE_BACKEND_WS_URL=ws://localhost:8081/ws
+      - VITE_BACKEND_LOGS_URL=ws://localhost:8081/logs

@@ -1,14 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 )
 
 func main() {
-	// Initialize WebSocket hub and node store
+	// Initialize WebSocket hub, log hub, and node store
 	hub := NewWSHub()
+	logHub := NewLogHub()
 	store := NewNodeStore()
 
 	// Create local node (your machine in Orlando)
@@ -25,14 +27,16 @@ func main() {
 	}
 	store.Nodes["local"] = localNode
 
-	// Start WebSocket hub in background
+	// Start WebSocket hubs in background
 	go hub.Run()
+	go logHub.Run()
 
 	// Start monitoring loop in background
-	go monitorConnections(hub, store)
+	go monitorConnections(hub, logHub, store)
 
 	// Set up HTTP routes
 	http.HandleFunc("/ws", HandleWebSocket(hub, store))
+	http.HandleFunc("/logs", HandleLogStream(logHub))
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
@@ -41,26 +45,33 @@ func main() {
 	// Start HTTP server
 	log.Println("NetOps backend starting on :8081")
 	log.Println("WebSocket endpoint: ws://localhost:8081/ws")
+	log.Println("Log stream endpoint: ws://localhost:8081/logs")
+	logHub.BroadcastLog("info", "NetOps backend started on :8081")
 	if err := http.ListenAndServe(":8081", nil); err != nil {
 		log.Fatal("Server failed to start:", err)
 	}
 }
 
 // monitorConnections periodically scans network connections
-func monitorConnections(hub *WSHub, store *NodeStore) {
+func monitorConnections(hub *WSHub, logHub *LogHub, store *NodeStore) {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
 	log.Println("Network monitoring started (scanning every 5 seconds)")
+	logHub.BroadcastLog("info", "Network monitoring started (scanning every 5 seconds)")
 
 	for range ticker.C {
 		connections, err := CaptureConnections()
 		if err != nil {
-			log.Printf("Failed to capture connections: %v", err)
+			errMsg := fmt.Sprintf("Failed to capture connections: %v", err)
+			log.Printf(errMsg)
+			logHub.BroadcastLog("error", errMsg)
 			continue
 		}
 
-		log.Printf("Found %d active connections", len(connections))
+		statusMsg := fmt.Sprintf("Found %d active connections", len(connections))
+		log.Printf(statusMsg)
+		logHub.BroadcastLog("info", statusMsg)
 
 		// Track which IPs we've seen this scan and count connections per IP
 		seenIPs := make(map[string]int) // IP -> connection count
@@ -80,10 +91,15 @@ func monitorConnections(hub *WSHub, store *NodeStore) {
 				}
 			} else {
 				// New node - perform GeoIP lookup
-				log.Printf("Discovering new node: %s", ip)
+				discoveryMsg := fmt.Sprintf("Discovering new node: %s", ip)
+				log.Printf(discoveryMsg)
+				logHub.BroadcastLog("info", discoveryMsg)
+
 				geoInfo, err := LookupGeoIP(ip)
 				if err != nil {
-					log.Printf("GeoIP lookup failed for %s: %v", ip, err)
+					errMsg := fmt.Sprintf("GeoIP lookup failed for %s: %v", ip, err)
+					log.Printf(errMsg)
+					logHub.BroadcastLog("warn", errMsg)
 					continue
 				}
 
@@ -110,7 +126,9 @@ func monitorConnections(hub *WSHub, store *NodeStore) {
 				store.Nodes[ip] = node
 
 				// Broadcast to clients
-				log.Printf("New node added: %s (%s) - %s", node.Name, node.IPAddress, node.Type)
+				nodeMsg := fmt.Sprintf("New node added: %s (%s) - %s", node.Name, node.IPAddress, node.Type)
+				log.Printf(nodeMsg)
+				logHub.BroadcastLog("info", nodeMsg)
 				hub.BroadcastNodeAdd(node)
 			}
 		}
@@ -143,14 +161,18 @@ func monitorConnections(hub *WSHub, store *NodeStore) {
 					if node.Status != "offline" {
 						node.Status = "offline"
 						hub.BroadcastNodeUpdate(node)
-						log.Printf("Node marked offline: %s (%s)", node.Name, node.IPAddress)
+						offlineMsg := fmt.Sprintf("Node marked offline: %s (%s)", node.Name, node.IPAddress)
+						log.Printf(offlineMsg)
+						logHub.BroadcastLog("warn", offlineMsg)
 					}
 
 					// If offline for 5 minutes, remove it
 					if now.Sub(node.LastSeen) > 5*time.Minute {
 						delete(store.Nodes, ip)
 						hub.BroadcastNodeRemove(ip)
-						log.Printf("Node removed: %s (%s)", node.Name, node.IPAddress)
+						removeMsg := fmt.Sprintf("Node removed: %s (%s)", node.Name, node.IPAddress)
+						log.Printf(removeMsg)
+						logHub.BroadcastLog("warn", removeMsg)
 					}
 				}
 			}

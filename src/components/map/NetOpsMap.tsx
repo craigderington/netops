@@ -7,6 +7,7 @@ import { LegendPanel } from '@/components/panels/LegendPanel'
 import { StatusPanel } from '@/components/panels/StatusPanel'
 import { NodeDetailsPanel } from '@/components/panels/NodeDetailsPanel'
 import { FiltersPanel } from '@/components/panels/FiltersPanel'
+import { TerminalPanel } from '@/components/panels/TerminalPanel'
 import type { NetworkNode } from '@/lib/types'
 
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
@@ -311,6 +312,7 @@ export function NetOpsMap() {
       <StatusPanel />
       <NodeDetailsPanel />
       <FiltersPanel />
+      <TerminalPanel />
     </>
   )
 }

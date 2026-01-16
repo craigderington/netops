@@ -59,3 +59,9 @@ func NewNodeStore() *NodeStore {
 		Nodes: make(map[string]*NetworkNode),
 	}
 }
+
+// LogMessage represents a log entry to be sent to clients
+type LogMessage struct {
+	Level   string `json:"level"`   // info, warn, error
+	Message string `json:"message"` // log message
+}

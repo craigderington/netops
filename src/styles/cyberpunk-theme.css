@@ -144,3 +144,7 @@
 .border-terminal-blue { border-color: var(--terminal-blue); }
 .border-terminal-red { border-color: var(--terminal-red); }
 .border-terminal-purple { border-color: var(--terminal-purple); }
+
+.bg-bg-primary { background-color: var(--background); }
+.bg-bg-secondary { background-color: var(--card); }
+.bg-bg-tertiary { background-color: var(--secondary); }
