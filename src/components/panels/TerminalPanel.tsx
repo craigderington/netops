@@ -74,15 +74,6 @@ export function TerminalPanel() {
     addLog('info', 'Terminal cleared')
   }
 
-  const getLevelColor = (level: LogEntry['level']) => {
-    switch (level) {
-      case 'info': return 'text-terminal-green'
-      case 'warn': return 'text-terminal-amber'
-      case 'error': return 'text-terminal-red'
-      default: return 'text-terminal-green'
-    }
-  }
-
   const getLevelPrefix = (level: LogEntry['level']) => {
     switch (level) {
       case 'info': return '[INFO]'

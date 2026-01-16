@@ -6,7 +6,7 @@ const WS_URL = 'ws://localhost:8081/ws'
 
 export function useWebSocket() {
   const wsRef = useRef<WebSocket | null>(null)
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>()
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const { addNode, updateNode, removeNode, clearNodes, setConnections } = useNetOpsStore()
 
   useEffect(() => {

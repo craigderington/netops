@@ -1,5 +1,5 @@
 # Backend Dockerfile for NetOps Visual
-FROM golang:1.22-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git ca-certificates
@@ -20,7 +20,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-s -w" -o 
 FROM alpine:latest
 
 # Install runtime dependencies
-RUN apk --no-cache add ca-certificates curl
+# iproute2-ss provides the 'ss' command for network monitoring
+RUN apk --no-cache add ca-certificates curl iproute2-ss
 
 WORKDIR /app
 

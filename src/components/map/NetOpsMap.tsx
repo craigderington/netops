@@ -84,7 +84,7 @@ export function NetOpsMap() {
 
     // Calculate offset positions for overlapping nodes
     const nodePositions = new Map<string, { lat: number; lng: number }>()
-    locationGroups.forEach((group, key) => {
+    locationGroups.forEach((group) => {
       if (group.length === 1) {
         // Single node - no offset needed
         nodePositions.set(group[0].id, group[0].location)

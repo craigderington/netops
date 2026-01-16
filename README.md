@@ -684,23 +684,34 @@ nginx.conf                 # Nginx configuration for SPA
 .dockerignore             # Build optimization
 ```
 
-#### Important Notes
+#### Important Notes & Caveats ⚠️
+
+**Platform Compatibility:**
+- ⚠️ **Linux Only**: `network_mode: host` does NOT work correctly on Docker Desktop (Mac/Windows) due to VM isolation
+- **Mac/Windows Users**: Run backend natively on your host OS, containerize only the frontend
+- **Linux Users**: Full Docker Compose support works as expected
+
+**Instance Limitations:**
+- ⚠️ **One Backend Per Host**: Since the backend monitors the entire host's network stack, you can only run ONE backend instance per physical/virtual machine
+- Multiple frontends can connect to the same backend instance
 
 **Security Considerations:**
 - Backend runs with elevated privileges (required for network monitoring)
+- Host network mode reduces container isolation (necessary trade-off)
 - In production, use specific capabilities instead of `privileged: true`
-- Consider network policies and firewall rules
+- Apply firewall rules and network policies
+- Keep images updated with security patches
 
 **Host Network Mode Implications:**
 - Backend container shares the host's network namespace
 - Port 8081 is directly exposed on the host (no port mapping needed)
 - Container can see all host network interfaces and connections
 - This is the ONLY way to monitor real network traffic from Docker
+- Less isolation but necessary for functionality
 
-**Alternative Approach (Not Recommended):**
-If you can't use host network mode, you could:
-1. Run backend directly on host (not in container)
-2. Use a privileged container with network namespace sharing
+**Alternative Approaches (If Host Network Won't Work):**
+1. **Recommended**: Run backend directly on host (not in container), containerize only frontend
+2. Run backend as a system service (systemd, launchd, etc.)
 3. Deploy as a DaemonSet in Kubernetes with `hostNetwork: true`
 
 #### Docker Compose Advanced Options
