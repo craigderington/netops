@@ -1,0 +1,146 @@
+/* Cyberpunk Terminal Theme for NetOps Visual */
+
+@layer base {
+  :root {
+    /* Terminal Colors */
+    --terminal-green: #00ff41;
+    --terminal-amber: #ffb000;
+    --terminal-blue: #00d9ff;
+    --terminal-red: #ff0055;
+    --terminal-purple: #bd00ff;
+
+    /* Security Zone Colors (with transparency) */
+    --zone-dmz: rgba(255, 176, 0, 0.2);
+    --zone-internal: rgba(0, 255, 65, 0.2);
+    --zone-public: rgba(255, 0, 85, 0.2);
+    --zone-private: rgba(189, 0, 255, 0.2);
+
+    /* Status Colors */
+    --status-online: var(--terminal-green);
+    --status-warning: var(--terminal-amber);
+    --status-critical: var(--terminal-red);
+    --status-offline: #666;
+
+    /* Override default theme for dark cyberpunk look */
+    --background: #0a0e14;
+    --foreground: #e6e6e6;
+    --card: #151a21;
+    --card-foreground: #e6e6e6;
+    --primary: var(--terminal-green);
+    --primary-foreground: #0a0e14;
+    --secondary: #1f2937;
+    --secondary-foreground: #e6e6e6;
+    --muted: #1f2937;
+    --muted-foreground: #a0a0a0;
+    --accent: var(--terminal-blue);
+    --accent-foreground: #0a0e14;
+    --border: rgba(0, 255, 65, 0.2);
+    --input: rgba(0, 255, 65, 0.15);
+    --ring: var(--terminal-green);
+  }
+}
+
+/* Monospace font for terminal aesthetic */
+@layer base {
+  body {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+  }
+}
+
+/* Scanline effect for terminal aesthetic */
+.terminal-effect {
+  position: relative;
+}
+
+.terminal-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 255, 65, 0.03),
+    rgba(0, 255, 65, 0.03) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Glow effect for active elements */
+.glow {
+  text-shadow: 0 0 10px currentColor;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.glow-green {
+  text-shadow: 0 0 10px var(--terminal-green);
+  box-shadow: 0 0 10px var(--terminal-green);
+}
+
+.glow-amber {
+  text-shadow: 0 0 10px var(--terminal-amber);
+  box-shadow: 0 0 10px var(--terminal-amber);
+}
+
+.glow-blue {
+  text-shadow: 0 0 10px var(--terminal-blue);
+  box-shadow: 0 0 10px var(--terminal-blue);
+}
+
+.glow-red {
+  text-shadow: 0 0 10px var(--terminal-red);
+  box-shadow: 0 0 10px var(--terminal-red);
+}
+
+/* Pulsing animation for status indicators */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.6;
+    filter: brightness(1.5);
+  }
+}
+
+.pulse-animation {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Connection line animations */
+@keyframes flow {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+.flow-animation {
+  animation: flow 3s linear infinite;
+}
+
+/* Utility classes for terminal colors */
+.text-terminal-green { color: var(--terminal-green); }
+.text-terminal-amber { color: var(--terminal-amber); }
+.text-terminal-blue { color: var(--terminal-blue); }
+.text-terminal-red { color: var(--terminal-red); }
+.text-terminal-purple { color: var(--terminal-purple); }
+
+.bg-terminal-green { background-color: var(--terminal-green); }
+.bg-terminal-amber { background-color: var(--terminal-amber); }
+.bg-terminal-blue { background-color: var(--terminal-blue); }
+.bg-terminal-red { background-color: var(--terminal-red); }
+.bg-terminal-purple { background-color: var(--terminal-purple); }
+
+.border-terminal-green { border-color: var(--terminal-green); }
+.border-terminal-amber { border-color: var(--terminal-amber); }
+.border-terminal-blue { border-color: var(--terminal-blue); }
+.border-terminal-red { border-color: var(--terminal-red); }
+.border-terminal-purple { border-color: var(--terminal-purple); }
