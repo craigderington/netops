@@ -19,6 +19,8 @@
 
 NetOps Visual is a cutting-edge network topology visualization tool that combines real-time network discovery, geographic mapping, and a stunning cyberpunk terminal aesthetic. Watch your network come alive as nodes pulse with CPU activity, connections flow with data, and threats glow with urgency.
 
+![netops-visualizer](https://github.com/craigderington/netops/blob/master/assets/net-ops-viz-map.png)
+
 ### ✨ Key Features
 
 - **🗺️ Real-Time Geographic Mapping** - Watch network nodes appear on a world map as they're discovered
