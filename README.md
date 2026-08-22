@@ -1,3 +1,5 @@
+
+
 # NetOps Visual 🌐
 
 <div align="center">
@@ -218,7 +220,7 @@ NetOps Visual intelligently classifies discovered endpoints:
 Connection lines show relationships between nodes:
 
 **Line Styles:**
-- **Solid Green**: Active HTTPS connections
+- **Solid Blue (thicker)**: Active HTTPS connections
 - **Dashed Green**: SSH tunnels
 - **Solid Blue**: HTTP connections
 - **Dotted Purple**: Database connections
